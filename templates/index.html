@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Lung Cancer Detection App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+    <style>
+        :root {
+            --primary: #1e9fb8;
+            --secondary: #39c19d;
+            --bg-light: #f5fbff;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f5fbff, #e0fffb);
+            min-height: 100vh;
+            margin: 0;
+            color: #123;
+        }
+
+        .navbar {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        .navbar-brand {
+            font-weight: 600;
+            color: #fff !important;
+        }
+
+        .hero {
+            padding: 40px 15px 20px;
+        }
+
+        .hero-card {
+            border-radius: 20px;
+            padding: 25px;
+            background: #fff;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+            border: none;
+        }
+
+        .hero-title {
+            font-weight: 700;
+            color: #104e67;
+        }
+
+        .hero-subtitle {
+            color: #567;
+        }
+
+        .badge-health {
+            background: rgba(255,255,255,0.2);
+            border-radius: 999px;
+            padding: 6px 14px;
+            font-size: 12px;
+            color: #e6f9ff;
+        }
+
+        .upload-area {
+            border: 2px dashed #c7e9f2;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            background-color: #f9feff;
+            transition: all 0.2s ease;
+        }
+
+        .upload-area.dragover {
+            border-color: var(--primary);
+            background-color: #e6f7ff;
+        }
+
+        .btn-primary-health {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 999px;
+            padding: 10px 24px;
+            font-weight: 600;
+        }
+
+        .btn-primary-health:hover {
+            filter: brightness(1.05);
+        }
+
+        .preview-img {
+            max-width: 100%;
+            max-height: 260px;
+            border-radius: 16px;
+            object-fit: contain;
+            background-color: #000;
+        }
+
+        .result-card {
+            border-radius: 18px;
+            border: none;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.06);
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border-radius: 999px;
+            padding: 4px 10px;
+            font-size: 12px;
+            background-color: #f3fafb;
+            color: #456;
+        }
+
+        .chip i {
+            font-size: 14px;
+        }
+
+        footer {
+            font-size: 13px;
+            color: #789;
+            padding: 15px 0 25px;
+            text-align: center;
+        }
+
+        @media (max-width: 767px) {
+            .hero {
+                padding-top: 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+        <span class="navbar-brand">
+            <i class="bi bi-lungs me-2"></i>
+            Lung Cancer APP
+        </span>
+    </div>
+</nav>
+
+<main class="hero">
+    <div class="container">
+        <div class="row g-4 align-items-stretch">
+            <!-- KIRI: Upload + Info -->
+            <div class="col-lg-6">
+                <div class="card hero-card h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="badge-health">
+                            <i class="bi bi-heart-pulse me-1"></i>
+                            Deep Learning · Transfer Learning
+                        </span>
+                        <span class="chip">
+                            <i class="bi bi-shield-check text-success"></i>
+                            Hanya untuk tujuan edukasi
+                        </span>
+                    </div>
+
+                    <h1 class="hero-title mb-2">
+                        Deteksi Kanker Paru<br>berbasis Citra Medis
+                    </h1>
+                    <p class="hero-subtitle mb-4">
+                        Upload citra paru (CT/X-ray) untuk mengklasifikasikan kondisi:
+                        <strong>Normal</strong>, <strong>Benign (jinak)</strong>, atau
+                        <strong>Malignant (ganas)</strong> menggunakan model deep learning.
+                    </p>
+
+                    <div id="uploadArea" class="upload-area mb-3">
+                        <input type="file" id="fileInput" accept="image/*" hidden>
+                        <i class="bi bi-cloud-arrow-up fs-1 mb-2 text-primary"></i>
+                        <p class="mb-1"><strong>Tarik & lepas</strong> gambar ke sini</p>
+                        <p class="text-muted mb-0" style="font-size: 13px;">
+                            atau klik untuk memilih file (.jpg, .jpeg, .png)
+                        </p>
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <span class="chip">
+                            <i class="bi bi-image"></i>
+                            Resolusi otomatis 224×224
+                        </span>
+                        <span class="chip">
+                            <i class="bi bi-cpu"></i>
+                            EfficientNetB0 transfer learning
+                        </span>
+                    </div>
+
+                    <button id="predictBtn" class="btn btn-primary-health" disabled>
+                        <i class="bi bi-stars me-1"></i>
+                        Analisis Gambar
+                    </button>
+
+                    <div id="statusText" class="mt-3 small text-muted"></div>
+                </div>
+            </div>
+
+            <!-- KANAN: Model performance + Hasil -->
+            <div class="col-lg-6">
+                <div class="card result-card h-100">
+                    <div class="card-body">
+                        <!-- Panel performa model -->
+                        <div class="mb-3 p-3 rounded-3" style="background:#eefaff; border:1px solid #d0e6ff;">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <div>
+                                    <span class="badge bg-info text-dark">
+                                        <i class="bi bi-graph-up-arrow me-1"></i>
+                                        Model Performance (Validation)
+                                    </span>
+                                </div>
+                                <div>
+                                    <span class="chip">
+                                        Akurasi:
+                                        <strong>{{ (app_accuracy * 100) | round(2) }}%</strong>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="table-responsive mt-2">
+                                <table class="table table-sm align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Kelas</th>
+                                            <th class="text-center">Precision</th>
+                                            <th class="text-center">Recall</th>
+                                            <th class="text-center">F1-score</th>
+                                            <th class="text-center">Support</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for m in class_metrics %}
+                                        <tr>
+                                            <td>{{ m.name }}</td>
+                                            <td class="text-center">{{ m.precision | round(2) }}%</td>
+                                            <td class="text-center">{{ m.recall | round(2) }}%</td>
+                                            <td class="text-center">{{ m.f1 | round(2) }}%</td>
+                                            <td class="text-center">{{ m.support }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <hr class="my-3">
+
+                        <h5 class="card-title mb-3">
+                            <i class="bi bi-activity me-2 text-primary"></i>
+                            Hasil Analisis Gambar
+                        </h5>
+
+                        <div class="row g-3">
+                            <div class="col-md-6 text-center">
+                                <div class="mb-2">
+                                    <img id="previewImg"
+                                         class="preview-img"
+                                         src="https://via.placeholder.com/400x260?text=Preview+Gambar"
+                                         alt="Preview gambar">
+                                </div>
+                                <small class="text-muted">
+                                    Pastikan citra paru cukup jelas untuk hasil analisis yang optimal.
+                                </small>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div id="resultBox" class="p-3 rounded-3" style="background-color: #f3fafb;">
+                                    <p class="mb-1 text-muted small">Prediksi utama:</p>
+                                    <h4 id="predLabel" class="mb-0">Belum ada prediksi</h4>
+                                    <p id="predConf" class="text-muted mb-3" style="font-size: 14px;"></p>
+
+                                    <p class="mb-1 text-muted small">Probabilitas tiap kelas:</p>
+                                    <ul id="probList" class="list-unstyled mb-0" style="font-size: 14px;">
+                                        <li class="text-muted">Normal: -</li>
+                                        <li class="text-muted">Benign (jinak): -</li>
+                                        <li class="text-muted">Malignant (ganas): -</li>
+                                    </ul>
+                                </div>
+
+                                <div id="noteAlert"
+                                     class="alert alert-info mt-3 small"
+                                     role="alert"
+                                     style="background: #e9f7ff;">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Hasil model ini hanya untuk edukasi dan tidak menggantikan diagnosis dokter.
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="mt-4">
+            <div>
+                <i class="bi bi-lungs me-1"></i>
+                Lung Cancer APP · Deep Learning for Medical Education
+            </div>
+        </footer>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+    const previewImg = document.getElementById('previewImg');
+    const predictBtn = document.getElementById('predictBtn');
+    const statusText = document.getElementById('statusText');
+
+    const predLabel = document.getElementById('predLabel');
+    const predConf = document.getElementById('predConf');
+    const probList = document.getElementById('probList');
+    const resultBox = document.getElementById('resultBox');
+    const noteAlert = document.getElementById('noteAlert');
+
+    let selectedFile = null;
+
+    // klik upload area => buka file picker
+    uploadArea.addEventListener('click', () => fileInput.click());
+
+    // drag & drop
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+
+    uploadArea.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+    });
+
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            fileInput.files = e.dataTransfer.files;
+            handleFileChange();
+        }
+    });
+
+    // saat file dipilih
+    fileInput.addEventListener('change', handleFileChange);
+
+    function handleFileChange() {
+        const file = fileInput.files[0];
+        if (!file) return;
+
+        selectedFile = file;
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            previewImg.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+
+        predictBtn.disabled = false;
+        statusText.textContent = "File siap dianalisis. Klik tombol 'Analisis Gambar'.";
+    }
+
+    // klik tombol prediksi
+    predictBtn.addEventListener('click', async () => {
+        if (!selectedFile) {
+            statusText.textContent = "Silakan pilih gambar terlebih dahulu.";
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+
+        predictBtn.disabled = true;
+        statusText.textContent = "Mengirim gambar ke server dan menjalankan model...";
+
+        try {
+            const response = await fetch('/predict', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.error || 'Gagal memproses permintaan.');
+            }
+
+            const data = await response.json();
+
+            // update hasil utama
+            predLabel.textContent = data.prediction || "Tidak diketahui";
+            predConf.textContent = data.confidence
+                ? `Confidence: ${data.confidence.toFixed(2)}%`
+                : "";
+
+            // update probabilitas
+            probList.innerHTML = "";
+            (data.probabilities || []).forEach(p => {
+                const li = document.createElement('li');
+                li.textContent = `${p.label}: ${p.value.toFixed(2)}%`;
+                probList.appendChild(li);
+            });
+
+            // ubah warna box & alert sesuai status risiko
+            const status = data.status || "unknown";
+            const note = data.note || "Hasil model ini hanya untuk edukasi.";
+
+            if (status === "high_risk") {
+                resultBox.style.backgroundColor = "#ffe6e6";
+                noteAlert.className = "alert alert-danger mt-3 small";
+            } else if (status === "borderline") {
+                resultBox.style.backgroundColor = "#fff9e6";
+                noteAlert.className = "alert alert-warning mt-3 small";
+            } else { // low_risk / unknown
+                resultBox.style.backgroundColor = "#f3fafb";
+                noteAlert.className = "alert alert-info mt-3 small";
+            }
+            noteAlert.innerHTML = `<i class="bi bi-exclamation-triangle-fill me-1"></i>${note}`;
+
+            statusText.textContent = "Analisis selesai. Perhatikan juga status risikonya.";
+        } catch (err) {
+            console.error(err);
+            statusText.textContent = "Terjadi kesalahan: " + err.message;
+        } finally {
+            predictBtn.disabled = false;
+        }
+    });
+</script>
+
+</body>
+</html>
